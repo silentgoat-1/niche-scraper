@@ -1,8 +1,20 @@
 require('dotenv').config();
 const snoowrap = require('snoowrap');
-const { GoogleGenerativeAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const TelegramBot = require('node-telegram-bot-api');
+
+// Debug environment variables
+console.log('Environment variables loaded:');
+console.log('REDDIT_CLIENT_ID:', process.env.REDDIT_CLIENT_ID ? '***' + process.env.REDDIT_CLIENT_ID.slice(-4) : 'undefined');
+console.log('REDDIT_CLIENT_SECRET:', process.env.REDDIT_CLIENT_SECRET ? '***' + process.env.REDDIT_CLIENT_SECRET.slice(-4) : 'undefined');
+console.log('REDDIT_USER_AGENT:', process.env.REDDIT_USER_AGENT || 'undefined');
+console.log('REDDIT_USERNAME:', process.env.REDDIT_USERNAME || 'undefined');
+console.log('REDDIT_PASSWORD:', process.env.REDDIT_PASSWORD ? '***' + process.env.REDDIT_PASSWORD.slice(-4) : 'undefined');
 const cron = require('node-cron');
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const { uploadReportToGitHub } = require('./githubBackup');
 
 // Initialize Telegram Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
@@ -12,6 +24,8 @@ const reddit = new snoowrap({
   userAgent: process.env.REDDIT_USER_AGENT,
   clientId: process.env.REDDIT_CLIENT_ID,
   clientSecret: process.env.REDDIT_CLIENT_SECRET,
+  username: process.env.REDDIT_USERNAME,
+  password: process.env.REDDIT_PASSWORD,
 });
 
 // Initialize Gemini API client
@@ -246,6 +260,14 @@ async function runDailyAnalysis() {
       // Save the report
       fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
       logWithTimestamp(`Daily report saved to ${reportPath}`);
+      
+      // Upload to GitHub
+      try {
+        await uploadReportToGitHub(reportPath);
+      } catch (error) {
+        logWithTimestamp(`GitHub backup failed: ${error.message}`);
+        // Continue execution even if GitHub backup fails
+      }
     } catch (error) {
       logWithTimestamp(`Error sending daily report: ${error.message}`);
       await notifyError(new Error(`Telegram notification error: ${error.message}`));
@@ -269,6 +291,48 @@ async function testErrorNotification() {
 cron.schedule("0 9 * * *", () => {
   logWithTimestamp("⏰ Scheduled task started: 9:00 AM");
   runDailyAnalysis();
+});
+
+// Initialize Express app
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Health check route
+app.get('/', (req, res) => {
+  try {
+    // Find the latest report date
+    const reportsDir = path.join(__dirname, 'data', 'reports');
+    let lastReport = "No reports yet";
+    
+    if (fs.existsSync(reportsDir)) {
+      const files = fs.readdirSync(reportsDir)
+        .filter(file => file.endsWith('.json'))
+        .sort((a, b) => {
+          // Extract dates from filenames
+          const dateA = a.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
+          const dateB = b.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
+          return dateB.localeCompare(dateA); // Sort in descending order
+        });
+      
+      if (files.length > 0) {
+        const latestFile = files[0];
+        const dateMatch = latestFile.match(/(\d{4}-\d{2}-\d{2})/);
+        if (dateMatch) {
+          lastReport = dateMatch[1];
+        }
+      }
+    }
+    
+    res.json({ status: "running", lastReport });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+// Start Express server
+app.listen(PORT, () => {
+  logWithTimestamp(`🚀 Render deployment active - Server running on port ${PORT}`);
+  logWithTimestamp(`Health check available at http://localhost:${PORT}`);
 });
 
 // Allow manual execution with --now flag
