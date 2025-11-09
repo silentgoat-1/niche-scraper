@@ -1,9 +1,6 @@
-require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
-const { Octokit } = require('@octokit/rest');
-const TelegramBot = require('node-telegram-bot-api');
+import fs from 'fs';
+import path from 'path';
+import { Octokit } from '@octokit/rest';
 
 // Initialize Telegram Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
@@ -142,4 +139,4 @@ async function uploadReportToGitHub(filePath) {
   return false;
 }
 
-module.exports = { uploadReportToGitHub };
+export { uploadReportToGitHub };

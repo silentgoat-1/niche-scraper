@@ -1,0 +1,12 @@
+{
+  "new_keywords": [],
+  "recurring_phrases": [],
+  "user_problems": [],
+  "trending_topics": [],
+  "sentiment_analysis": {
+    "positive": 0,
+    "neutral": 0,
+    "negative": 0
+  },
+  "raw_analysis": "Analysis failed"
+}
