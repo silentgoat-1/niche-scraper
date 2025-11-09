@@ -11,7 +11,7 @@ console.log('REDDIT_USER_AGENT:', process.env.REDDIT_USER_AGENT || 'undefined');
 console.log('REDDIT_USERNAME:', process.env.REDDIT_USERNAME || 'undefined');
 console.log('REDDIT_PASSWORD:', process.env.REDDIT_PASSWORD ? '***' + process.env.REDDIT_PASSWORD.slice(-4) : 'undefined');
 const cron = require('node-cron');
-const express = require('express');
+import express from 'express';
 const fs = require('fs');
 const path = require('path');
 const { uploadToGitHub } = require('./githubBackup');
@@ -351,3 +351,7 @@ if (process.argv.includes("--now")) {
 if (process.argv.includes("--test-error")) {
   testErrorNotification();
 }
+
+// Vercel serverless function
+const app = express();
+export default app;
