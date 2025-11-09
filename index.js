@@ -14,7 +14,7 @@ const cron = require('node-cron');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-import { uploadToGitHub } from './githubBackup.js';
+const { uploadToGitHub } = require('./githubBackup');
 
 // Initialize Telegram Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });

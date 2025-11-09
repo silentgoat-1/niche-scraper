@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { Octokit } from '@octokit/rest';
+const fs = require('fs');
+const path = require('path');
+const { Octokit } = require('@octokit/rest');
 
-export async function uploadToGitHub(filePath) {
+async function uploadToGitHub(filePath) {
   try {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
     const GITHUB_REPO = process.env.GITHUB_REPO;
@@ -28,3 +28,5 @@ export async function uploadToGitHub(filePath) {
     console.error('❌ GitHub upload failed:', error.message);
   }
 }
+
+module.exports = { uploadToGitHub };
