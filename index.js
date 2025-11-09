@@ -14,7 +14,7 @@ const cron = require('node-cron');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-import { uploadReportToGitHub } from './githubBackup.js';
+import { uploadToGitHub } from './githubBackup.js';
 
 // Initialize Telegram Bot
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
@@ -269,7 +269,7 @@ async function runDailyAnalysis() {
       
       // Upload to GitHub
       try {
-        await uploadReportToGitHub(reportPath);
+        await uploadToGitHub(reportPath);
       } catch (error) {
         logWithTimestamp(`GitHub backup failed: ${error.message}`);
         // Continue execution even if GitHub backup fails
