@@ -28,6 +28,12 @@ const reddit = new snoowrap({
   password: process.env.REDDIT_PASSWORD,
 });
 
+// Configure OAuth2
+reddit.config({
+  accessToken: 'manual',
+  refreshToken: 'manual'
+});
+
 // Initialize Gemini API client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -77,7 +83,7 @@ async function analyzeTrendingData(posts) {
   try {
     logWithTimestamp("Starting Gemini analysis...");
     // Initialize the model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Prepare the posts data for analysis
     const postsText = posts.map(post => 
