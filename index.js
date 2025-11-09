@@ -329,16 +329,16 @@ app.get('/', (req, res) => {
   }
 });
 
-// Start Express server
-app.listen(PORT, () => {
-  logWithTimestamp(`🚀 Render deployment active - Server running on port ${PORT}`);
-  logWithTimestamp(`Health check available at http://localhost:${PORT}`);
-});
-
 // Allow manual execution with --now flag
 if (process.argv.includes("--now")) {
   logWithTimestamp("Running manual analysis...");
   runDailyAnalysis();
+} else {
+  // Start Express server only when not using --now flag
+  app.listen(PORT, () => {
+    logWithTimestamp(`🚀 Render deployment active - Server running on port ${PORT}`);
+    logWithTimestamp(`Health check available at http://localhost:${PORT}`);
+  });
 }
 
 // Allow testing error notifications with --test-error flag
